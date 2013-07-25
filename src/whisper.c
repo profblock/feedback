@@ -3,14 +3,36 @@
 #include <math.h>
 #include <stdlib.h>
 
+
+//Incase I want to change how I calculate the current Radians
+double getCurRadians(micSpeakerStruct* ms){
+	return ms->curRadians;
+}
+
+//"private" method
 int getXSpeakerPos(micSpeakerStruct* ms){
-	double xPos = cos(ms->curRadians) * ms->radius;
+	double xPos = cos(getCurRadians(ms)) * ms->radius;
 	return (int)xPos;
 }
 
+//"private" method
 int getYSpeakerPos(micSpeakerStruct* ms){
-	double yPos = sin(ms->curRadians) * ms->radius;
+	double yPos = sin(getCurRadians(ms)) * ms->radius;
 	return (int)yPos;
+}
+
+//"private" method for calculating the distance between the x and y
+double getMicSpeakerDistance(micSpeakerStruct* ms){
+	int speakerX = getXSpeakerPos(ms);
+	int speakerY = getYSpeakerPos(ms);
+	int micX = ms->micXPos;
+	int micY = ms->micYPos;
+	
+	int xDis = speakerX-micX;
+	int yDis = speakerY-micY;
+	
+	double dist = sqrt(xDis*xDis +yDis*yDis);
+	return dist;
 }
 
 int initSpeakerPos(micSpeakerStruct* ms, int speakerNumber, int micNumber, int speed)
@@ -61,6 +83,9 @@ int initSpeakerPos(micSpeakerStruct* ms, int speakerNumber, int micNumber, int s
 				return 1;
 		}
 	}
+	double distance = getMicSpeakerDistance(ms);
+	printf("The Mic (X,Y) is (%d, %d)\n", ms->micXPos, ms->micYPos);
+	printf("The distance is %f\n", distance);
 
 	return 0;
 }
