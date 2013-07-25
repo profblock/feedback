@@ -3,7 +3,8 @@
 
 int main()
 {
-	printf("Feedback Hello\n");
+	int z = testNumber();
+	printf("Feedback Hello %d\n", z);
 	printTestString();
 	return 0;
 }
