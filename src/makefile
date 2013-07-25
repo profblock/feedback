@@ -1,6 +1,7 @@
 IDIR =../include
 CC=gcc
-CFLAGS=-I$(IDIR)
+CFLAGS=-I$(IDIR) -lm
+# -lm is needed to include sin and cos from math.h. C is annoying
 
 ODIR=obj
 LDIR =../lib

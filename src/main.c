@@ -8,7 +8,7 @@ int main()
 	printf("Feedback Hello %d\n", z);
 	printTestString();
 	micSpeakerStruct ms;
-	initSpeakerPos(& ms, 1,1,2);
+	initSpeakerPos(&ms, 1,1,2);
 	printf("here!\n");
 	return 0;
 }
