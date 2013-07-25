@@ -30,7 +30,6 @@ void updateWeight(taskStruct * task, int actualWeight, int estimatedWeight)
  * totalError is the summation.
  * This returns the estimated weight fro the next Task
  */
- 
 int predictWeight(taskStruct* task){
 	int returnValue = (int) (task->pValue * task->currentError + task->iValue*task->totalError);
 	return returnValue;

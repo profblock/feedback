@@ -5,10 +5,10 @@ CFLAGS=-I$(IDIR)
 ODIR=obj
 LDIR =../lib
 
-_DEPS = feedback.h
+_DEPS = feedback.h whisper.h
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
-_OBJ = main.o feedback.o 
+_OBJ = main.o feedback.o whisper.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 
