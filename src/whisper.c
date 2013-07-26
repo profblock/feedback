@@ -15,23 +15,6 @@ double getMicSpeakerDistanceInMeters(micSpeakerStruct* ms);
 
 /****** "Public" Methods********/
 
-micSpeakerStruct* constructSpeakerMicPair (int speakerNumber, int micNumber){
-	micSpeakerStruct* rtnStruct = (micSpeakerStruct*) malloc(sizeof(micSpeakerStruct));
-	if(rtnStruct!=0){
-		int returnVal = initSpeakerMicPair(rtnStruct,speakerNumber,micNumber);
-		if (returnVal==0){
-			return rtnStruct;
-		} else {
-			printf("Error: Couldn't initialize speakerMicPair\n");
-			return 0;
-		}
-	}
-	printf("Error: Couldn't construct speakerMicPair\n");
-	return 0;
-}
-
-
-
 int initWhisperRoom(double alpha, double beta, int numSpeakers, int numMic, int occluding,
 					long int side, long int radius, double speedInMetersPerSecond, long int unitsPerMeter, 
 					long int ticksPerSecond){
@@ -59,6 +42,34 @@ int initWhisperRoom(double alpha, double beta, int numSpeakers, int numMic, int 
 	}
 	WHISPER_UNITS_IN_A_METER = unitsPerMeter;
 	WHISPER_TICS_PER_SECOND = ticksPerSecond;
+}
+
+
+micSpeakerStruct* constructSpeakerMicPair (int speakerNumber, int micNumber){
+	micSpeakerStruct* rtnStruct = (micSpeakerStruct*) malloc(sizeof(micSpeakerStruct));
+	if(rtnStruct!=0){
+		int returnVal = initSpeakerMicPair(rtnStruct,speakerNumber,micNumber);
+		if (returnVal==0){
+			return rtnStruct;
+		} else {
+			printf("Error: Couldn't initialize speakerMicPair\n");
+			return 0;
+		}
+	}
+	printf("Error: Couldn't construct speakerMicPair\n");
+	return 0;
+}
+
+micSpeakerStruct* constructSpeakerMicPairByNumber(int speakerPairNumber){
+	int numberOfPairs = NUMBER_OF_SPEAKERS*NUMBER_OF_MICROPHONES;
+	if((speakerPairNumber<0) || (speakerPairNumber>= numberOfPairs)){
+		printf("Error: Number out of range\n");
+		return 0;
+	}
+	
+	int micNumber = speakerPairNumber/NUMBER_OF_SPEAKERS;
+	int speakerNumber = speakerPairNumber % NUMBER_OF_SPEAKERS;
+	return constructSpeakerMicPair(speakerNumber,micNumber);
 }
 
 					
@@ -109,10 +120,13 @@ int initSpeakerMicPair(micSpeakerStruct* ms, int speakerNumber, int micNumber){
 	}
 	double distance = getMicSpeakerDistanceInMeters(ms);
 	
-	printf("the Speed in Units Per Tic is %ld\n", ms->speedInUnitsPerTic);
-	printf("The value is %ld, %ld\n", getXSpeakerPos(ms), getYSpeakerPos(ms));
-	printf("The Mic (X,Y) is (%ld, %ld)\n", ms->micXPos, ms->micYPos);
-	printf("The distance is %f\n", distance);
+	/****** Debugging Messages *******
+	 *printf("the Speed in Units Per Tic is %ld\n", ms->speedInUnitsPerTic);
+	 *printf("The value is %ld, %ld\n", getXSpeakerPos(ms), getYSpeakerPos(ms));
+	 *printf("The Mic (X,Y) is (%ld, %ld)\n", ms->micXPos, ms->micYPos);
+	 *printf("The distance is %f\n", distance);
+	 */
+	
 	
 	return 0;
 }
@@ -126,11 +140,12 @@ void updatePosition(micSpeakerStruct* ms, long int numOfTicks){
 	ms->curRadians+=radiansTravled;	
 	
 	/**** Remove this later, for testing Only ****/
-/*	ms->totalTics+=numOfTicks;
-	unitsTraveledAroundArc = ms->totalTics* ms->speedInUnitsPerTic;
-	fractionOfCircleTravled = ((double)unitsTraveledAroundArc)/(2* M_PI* ms->radius);
-	radiansTravled = 2*M_PI*fractionOfCircleTravled +ms->initRadians;
-	//printf("curRadians %f\ntotRadians %f\n",ms->curRadians, radiansTravled); */
+	/*	ms->totalTics+=numOfTicks;
+	 * unitsTraveledAroundArc = ms->totalTics* ms->speedInUnitsPerTic;
+	 * fractionOfCircleTravled = ((double)unitsTraveledAroundArc)/(2* M_PI* ms->radius);
+	 * radiansTravled = 2*M_PI*fractionOfCircleTravled +ms->initRadians;
+	 * printf("curRadians %f\ntotRadians %f\n",ms->curRadians, radiansTravled);
+	 */
 }
 	
 
