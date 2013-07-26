@@ -78,6 +78,14 @@ int initSpeakerMicPair(micSpeakerStruct* ms, int speakerNumber, int micNumber){
 		printf("ERROR: This only works for 4 Microphones right now");
 		return 1;
 	} 
+	
+	if (NOISE_LIST==0){
+		printf("NOTE: No noise list has been established. If you wish to use noise, establish that first in your code\n");
+	} 
+	ms->noiseList = NOISE_LIST;
+	ms->lastNoiseStart = -1; //It starts at -1 So there is no noise started at 0. 
+	ms->lastNoiseEnd = 0; //It ends at 0 because thats way all future noise computations can be handled correctly
+	ms->quiet=1; //Starts off quiet
 		
 	/* Establish the initial and current speaker Position */
 	// Note M_PI is defined in math.h
@@ -86,9 +94,10 @@ int initSpeakerMicPair(micSpeakerStruct* ms, int speakerNumber, int micNumber){
 	ms->initRadians = radianOnCircle;
 	ms->curRadians = ms->initRadians;
 	ms->radius = WHISPER_SPEAKER_RADIUS;
+	
 	double speedInUnitsPerSecond= SPEAKER_SPEED_IN_M_PER_SEC* WHISPER_UNITS_IN_A_METER;
 	ms->speedInUnitsPerTic = (long int) (speedInUnitsPerSecond/WHISPER_TICS_PER_SECOND);
-	//ms->totalTics = 0;
+	ms->totalTics = 0;
 
 
 	/* Establish the initial Microphone Position */	
@@ -134,11 +143,27 @@ int initSpeakerMicPair(micSpeakerStruct* ms, int speakerNumber, int micNumber){
 
 void updatePosition(micSpeakerStruct* ms, long int numOfTicks){
 
+	ms->totalTics+=numOfTicks;
+	
 	long int unitsTraveledAroundArc = numOfTicks* ms->speedInUnitsPerTic;
 	double fractionOfCircleTravled = ((double)unitsTraveledAroundArc)/(2* M_PI* ms->radius);
 	double radiansTravled = 2*M_PI*fractionOfCircleTravled;
 	ms->curRadians+=radiansTravled;	
-	
+	if( (ms->noiseList!=0) && (ms->quiet==1) 
+		&& (ms->totalTics >= (ms->lastNoiseEnd + ms->noiseList->noiseStartAfterLastInTics)) )
+	{
+		//printf("--------Starting noise at %ld\n", ms->totalTics);
+		ms->quiet = 0;
+		ms->lastNoiseStart = ms->lastNoiseEnd + ms->noiseList->noiseStartAfterLastInTics;
+	}
+	if( (ms->noiseList!=0) && (ms->quiet==0) 
+		&& (ms->totalTics >= (ms->lastNoiseStart + ms->noiseList->noiseDurationInTics)) )
+	{
+		//printf("+++++++++ending noise at %ld\n", ms->totalTics);
+		ms->quiet = 1;
+		ms->lastNoiseEnd = ms->lastNoiseStart + ms->noiseList->noiseDurationInTics;
+		ms->noiseList= ms->noiseList->next;
+	}
 	/**** Remove this later, for testing Only ****/
 	/*	ms->totalTics+=numOfTicks;
 	 * unitsTraveledAroundArc = ms->totalTics* ms->speedInUnitsPerTic;
@@ -152,10 +177,37 @@ void updatePosition(micSpeakerStruct* ms, long int numOfTicks){
 int getNumberOfOperations(micSpeakerStruct* ms){
 	double distanceFactor = getMicSpeakerDistanceInMeters(ms)*WHISPER_ALPHA;
 	double totalComputations = WHISPER_BETA * pow(distanceFactor,2);
+	
+	//If there is noise, the multiply the amount of computations by a factor.
+	if( (ms->noiseList!=0) && (ms->quiet ==0) ) {
+		totalComputations*=ms->noiseList->multiplictiveImpact;
+	}
+	
 	return (int) totalComputations;
 }
 
-
+int addNoise(double startAfterSeconds, double durationInSeconds,double factor){
+	noiseStruct* newNoise = (noiseStruct*)malloc(sizeof(noiseStruct));
+	if(newNoise==0){
+		printf("Error: Could not create noise element");
+		return 1;
+	}
+	
+	newNoise->noiseStartAfterLastInTics = (long int)(startAfterSeconds*WHISPER_TICS_PER_SECOND);
+	newNoise->noiseDurationInTics = (long int)(durationInSeconds*WHISPER_TICS_PER_SECOND);
+	newNoise->multiplictiveImpact=factor;
+	newNoise->next = 0;
+	
+	if(NOISE_LIST==0){
+		NOISE_LIST = newNoise;
+		END_LIST = newNoise;
+	} else {
+		END_LIST->next = newNoise;
+		END_LIST = newNoise;
+	}
+	return 0;
+} 
+		
 /****** "Private" Method Definition********/
 //Incase I want to change how I calculate the current Radians
 double getCurRadians(micSpeakerStruct* ms){
