@@ -15,13 +15,32 @@ double getMicSpeakerDistanceInMeters(micSpeakerStruct* ms);
 
 /****** "Public" Methods********/
 
+micSpeakerStruct* constructSpeakerMicPair (int speakerNumber, int micNumber){
+	micSpeakerStruct* rtnStruct = (micSpeakerStruct*) malloc(sizeof(micSpeakerStruct));
+	if(rtnStruct!=0){
+		int returnVal = initSpeakerMicPair(rtnStruct,speakerNumber,micNumber);
+		if (returnVal==0){
+			return rtnStruct;
+		} else {
+			printf("Error: Couldn't initialize speakerMicPair\n");
+			return 0;
+		}
+	}
+	printf("Error: Couldn't construct speakerMicPair\n");
+	return 0;
+}
+
+
+
 int initWhisperRoom(double alpha, double beta, int numSpeakers, int numMic, int occluding,
-					long int side, long int radius, long int unitsPerMeter, 
+					long int side, long int radius, double speedInMetersPerSecond, long int unitsPerMeter, 
 					long int ticksPerSecond){
 	if(numMic!=4){
 		printf("Error: Only supports 4 microphones currently\n");
 		return 1;
 	}
+	SPEAKER_SPEED_IN_M_PER_SEC = speedInMetersPerSecond;
+	
 	NUMBER_OF_MICROPHONES = numMic;
 
 	WHISPER_ALPHA = alpha; 
@@ -43,7 +62,7 @@ int initWhisperRoom(double alpha, double beta, int numSpeakers, int numMic, int 
 }
 
 					
-int initSpeakerPos(micSpeakerStruct* ms, int speakerNumber, int micNumber, double speedInMetersPerSecond){
+int initSpeakerMicPair(micSpeakerStruct* ms, int speakerNumber, int micNumber){
 	if (NUMBER_OF_MICROPHONES !=4) {
 		printf("ERROR: This only works for 4 Microphones right now");
 		return 1;
@@ -56,7 +75,7 @@ int initSpeakerPos(micSpeakerStruct* ms, int speakerNumber, int micNumber, doubl
 	ms->initRadians = radianOnCircle;
 	ms->curRadians = ms->initRadians;
 	ms->radius = WHISPER_SPEAKER_RADIUS;
-	double speedInUnitsPerSecond=speedInMetersPerSecond* WHISPER_UNITS_IN_A_METER;
+	double speedInUnitsPerSecond= SPEAKER_SPEED_IN_M_PER_SEC* WHISPER_UNITS_IN_A_METER;
 	ms->speedInUnitsPerTic = (long int) (speedInUnitsPerSecond/WHISPER_TICS_PER_SECOND);
 	//ms->totalTics = 0;
 
