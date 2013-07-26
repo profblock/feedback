@@ -82,14 +82,14 @@ void updatePosition(micSpeakerStruct* ms, long int numOfTicks){
 	unitsTraveledAroundArc = ms->totalTics* ms->speedInUnitsPerTic;
 	fractionOfCircleTravled = ((double)unitsTraveledAroundArc)/(2* M_PI* ms->radius);
 	radiansTravled = 2*M_PI*fractionOfCircleTravled +ms->initRadians;
-	printf("curRadians %f\ntotRadians %f\n",ms->curRadians, radiansTravled);
+	//printf("curRadians %f\ntotRadians %f\n",ms->curRadians, radiansTravled);
 }
 	
 
 int getNumberOfOperations(micSpeakerStruct* ms){
 	double distanceFactor = getMicSpeakerDistanceInMeters(ms)*WHISPER_ALPHA;
 	double totalComputations = WHISPER_BETA * pow(distanceFactor,2);
-	return totalComputations;
+	return (int) totalComputations;
 }
 
 
@@ -123,5 +123,7 @@ double getMicSpeakerDistanceInMeters(micSpeakerStruct* ms){
 	
 	double distInUnits = sqrt(pow(xDis,2) + pow(yDis,2));
 	double distInMeters = distInUnits/WHISPER_UNITS_IN_A_METER;
+	
+	printf("(%ld, %ld),  Distance is Meters %f", speakerX, speakerY, distInMeters);
 	return distInMeters;
 }
