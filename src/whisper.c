@@ -14,6 +14,35 @@ double getMicSpeakerDistanceInMeters(micSpeakerStruct* ms);
 
 
 /****** "Public" Methods********/
+
+int initWhisperRoom(double alpha, double beta, int numSpeakers, int numMic, int occluding,
+					long int side, long int radius, long int unitsPerMeter, 
+					long int ticksPerSecond){
+	if(numMic!=4){
+		printf("Error: Only supports 4 microphones currently\n");
+		return 1;
+	}
+	NUMBER_OF_MICROPHONES = numMic;
+
+	WHISPER_ALPHA = alpha; 
+	WHISPER_BETA = beta;  
+	NUMBER_OF_SPEAKERS = numSpeakers;
+	
+	OCCLUDING_OBJECT = occluding;
+	if (!( (OCCLUDING_OBJECT==0) || (OCCLUDING_OBJECT ==1) )){
+		printf("Warning: occluding should be either 0 or 1, setting to 1 and continuing");
+	}
+	WHISPER_ROOM_SIDE = side;
+	WHISPER_SPEAKER_RADIUS = radius;
+	if (side< (2*radius)){
+		printf("Warning: The radius * 2 cannot be bigger than side. Setting side =2*radius and continuing");
+		WHISPER_ROOM_SIDE = 2*WHISPER_SPEAKER_RADIUS;
+	}
+	WHISPER_UNITS_IN_A_METER = unitsPerMeter;
+	WHISPER_TICS_PER_SECOND = ticksPerSecond;
+}
+
+					
 int initSpeakerPos(micSpeakerStruct* ms, int speakerNumber, int micNumber, double speedInMetersPerSecond){
 	if (NUMBER_OF_MICROPHONES !=4) {
 		printf("ERROR: This only works for 4 Microphones right now");
@@ -127,3 +156,5 @@ double getMicSpeakerDistanceInMeters(micSpeakerStruct* ms){
 	//printf("(%ld, %ld),  Distance is Meters %f", speakerX, speakerY, distInMeters);
 	return distInMeters;
 }
+
+
