@@ -14,7 +14,7 @@ int main()
 	for(i =0;i<2540;i++){
 		updatePosition(&ms, 100);
 		int numberOfOperations = getNumberOfOperations(&ms);
-		printf("Ops %d\n", numberOfOperations);
+		//printf("Ops %d\n", numberOfOperations);
 	}
 	return 0;
 }
