@@ -29,7 +29,7 @@ int initSpeakerPos(micSpeakerStruct* ms, int speakerNumber, int micNumber, doubl
 	ms->radius = WHISPER_SPEAKER_RADIUS;
 	double speedInUnitsPerSecond=speedInMetersPerSecond* WHISPER_UNITS_IN_A_METER;
 	ms->speedInUnitsPerTic = (long int) (speedInUnitsPerSecond/WHISPER_TICS_PER_SECOND);
-	ms->totalTics = 0;
+	//ms->totalTics = 0;
 
 
 	/* Establish the initial Microphone Position */	
@@ -78,11 +78,11 @@ void updatePosition(micSpeakerStruct* ms, long int numOfTicks){
 	ms->curRadians+=radiansTravled;	
 	
 	/**** Remove this later, for testing Only ****/
-	ms->totalTics+=numOfTicks;
+/*	ms->totalTics+=numOfTicks;
 	unitsTraveledAroundArc = ms->totalTics* ms->speedInUnitsPerTic;
 	fractionOfCircleTravled = ((double)unitsTraveledAroundArc)/(2* M_PI* ms->radius);
 	radiansTravled = 2*M_PI*fractionOfCircleTravled +ms->initRadians;
-	//printf("curRadians %f\ntotRadians %f\n",ms->curRadians, radiansTravled);
+	//printf("curRadians %f\ntotRadians %f\n",ms->curRadians, radiansTravled); */
 }
 	
 
