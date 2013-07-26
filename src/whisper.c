@@ -124,6 +124,6 @@ double getMicSpeakerDistanceInMeters(micSpeakerStruct* ms){
 	double distInUnits = sqrt(pow(xDis,2) + pow(yDis,2));
 	double distInMeters = distInUnits/WHISPER_UNITS_IN_A_METER;
 	
-	printf("(%ld, %ld),  Distance is Meters %f", speakerX, speakerY, distInMeters);
+	//printf("(%ld, %ld),  Distance is Meters %f", speakerX, speakerY, distInMeters);
 	return distInMeters;
 }
