@@ -187,7 +187,10 @@ int getNumberOfOperations(micSpeakerStruct* ms){
 		OccludingPointsStruct* ops = (OccludingPointsStruct*)malloc(sizeof(OccludingPointsStruct));
 		occludingPoints(ms, ops);
 		if(ops->numberOfPoints==2){
-			//TODO: add additional distance
+			double radians = getThetaBetweenTwoPoints(ops);
+			double additionalDistance = OCCLUDING_OBJECT_SIZE*radians;
+			distanceFactor+=additionalDistance;
+			
 		} else if (ops->numberOfPoints==1){
 			//Nothing happens because there is occlusion but no additional distance
 		}
@@ -224,41 +227,7 @@ int addNoise(double startAfterSeconds, double durationInSeconds,double factor){
 	}
 	return 0;
 } 
-		
-/****** "Private" Method Definition********/
-//Incase I want to change how I calculate the current Radians
-double getCurRadians(micSpeakerStruct* ms){
-	return ms->curRadians;
-}
 
-//"private" method
-long int getXSpeakerPos(micSpeakerStruct* ms){
-	double xPos = cos(getCurRadians(ms)) * ms->radius;
-	return (long int)xPos;
-}
-
-//"private" method
-long int getYSpeakerPos(micSpeakerStruct* ms){
-	double yPos = sin(getCurRadians(ms)) * ms->radius;
-	return (long  int)yPos;
-}
-
-//"private" method for calculating the distance between the x and y
-double getMicSpeakerDistanceInMeters(micSpeakerStruct* ms){
-	long int speakerX = getXSpeakerPos(ms);
-	long int speakerY = getYSpeakerPos(ms);
-	long int micX = ms->micXPos;
-	long int micY = ms->micYPos;
-	
-	long int xDis = speakerX-micX;
-	long int yDis = speakerY-micY;
-	
-	double distInUnits = sqrt(pow(xDis,2) + pow(yDis,2));
-	double distInMeters = distInUnits/WHISPER_UNITS_IN_A_METER;
-	
-	//printf("(%ld, %ld),  Distance is Meters %f", speakerX, speakerY, distInMeters);
-	return distInMeters;
-}
 
 //Value is returned in the ops datastructure. Must be created beforehand
 void occludingPoints(micSpeakerStruct* ms, OccludingPointsStruct* ops){
@@ -354,4 +323,52 @@ void occludingPoints(micSpeakerStruct* ms, OccludingPointsStruct* ops){
 	
 	}
 }
+		
+/****** "Private" Method Definition********/
+//Incase I want to change how I calculate the current Radians
+double getCurRadians(micSpeakerStruct* ms){
+	return ms->curRadians;
+}
 
+//"private" method
+long int getXSpeakerPos(micSpeakerStruct* ms){
+	double xPos = cos(getCurRadians(ms)) * ms->radius;
+	return (long int)xPos;
+}
+
+//"private" method
+long int getYSpeakerPos(micSpeakerStruct* ms){
+	double yPos = sin(getCurRadians(ms)) * ms->radius;
+	return (long  int)yPos;
+}
+
+//"private" method for calculating the distance between the x and y
+double getMicSpeakerDistanceInMeters(micSpeakerStruct* ms){
+	long int speakerX = getXSpeakerPos(ms);
+	long int speakerY = getYSpeakerPos(ms);
+	long int micX = ms->micXPos;
+	long int micY = ms->micYPos;
+	
+	long int xDis = speakerX-micX;
+	long int yDis = speakerY-micY;
+	
+	double distInUnits = sqrt(pow(xDis,2) + pow(yDis,2));
+	double distInMeters = distInUnits/WHISPER_UNITS_IN_A_METER;
+	
+	//printf("(%ld, %ld),  Distance is Meters %f", speakerX, speakerY, distInMeters);
+	return distInMeters;
+}
+
+
+double getThetaBetweenTwoPoints(OccludingPointsStruct* ops){
+	if (ops->numberOfPoints==2){
+		double sideA = sqrt( pow(ops->x1-ops->x2,2) + pow(ops->y1-ops->y2,2));
+		double sideB = sqrt( pow(ops->x2,2) + pow(ops->y2,2));
+		double sideC = sqrt( pow(ops->x1,2) + pow(ops->y1,2));
+		double term = (pow(sideB,2) + pow(sideC,2) - pow(sideA,2))/(2*sideB*sideC);
+		double angle = acos(term);
+		return angle;
+	} else {
+		return 0;
+	}
+}

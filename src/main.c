@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "feedback.h"
 #include "whisper.h"
+#include <math.h>
 
 int main()
 {
@@ -19,8 +20,24 @@ int main()
 	}
 	
 	OccludingPointsStruct* ops = (OccludingPointsStruct*)malloc(sizeof(OccludingPointsStruct));
+	/*
+		long int x1;
+	long int y1;
+	long int x2;
+	long int y2;
+	int numberOfPoints; //Can be 0,1, or 2. 
+	*/
+	ops->numberOfPoints = 2;
+	ops->x1 = 100;
+	ops->y1 = 0;
+	ops->x2 = -1;
+	ops->y2 = 0;
+	
+	printf("%f, %f, %f\n", M_PI/4, M_PI/2, M_PI);
+	double v = getThetaBetweenTwoPoints(ops);
+	printf("The value %f\n", v);
 	int i;
-	for(i =0;i<2540;i++){
+	/*for(i =0;i<2540;i++){
 		updatePosition(ms, 1);
 		int numberOfOperations = getNumberOfOperations(ms);
 		occludingPoints(ms,ops);
@@ -30,6 +47,6 @@ int main()
 			//printf("No Occlusion\n");
 		}
 		//printf("Ops %d\n", numberOfOperations); 
-	}
+	}*/
 	return 0;
 }
