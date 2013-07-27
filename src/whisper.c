@@ -16,11 +16,15 @@ double getMicSpeakerDistanceInMeters(micSpeakerStruct* ms);
 
 /****** "Public" Methods********/
 
-int initWhisperRoom(double alpha, double beta, int numSpeakers, int numMic, int occluding,
+int initWhisperRoom(double alpha, double beta, int numSpeakers, int numMic, int occluding, long int occludingSize,
 					long int side, long int radius, double speedInMetersPerSecond, long int unitsPerMeter, 
 					long int ticksPerSecond){
 	if(numMic!=4){
 		printf("Error: Only supports 4 microphones currently\n");
+		return 1;
+	}
+	if (OCCLUDING_OBJECT_SIZE> radius){
+		printf("ERROR: Occluding object must be less then the radius of the microphones\n");
 		return 1;
 	}
 	SPEAKER_SPEED_IN_M_PER_SEC = speedInMetersPerSecond;
@@ -41,6 +45,8 @@ int initWhisperRoom(double alpha, double beta, int numSpeakers, int numMic, int 
 		printf("Warning: The radius * 2 cannot be bigger than side. Setting side =2*radius and continuing");
 		WHISPER_ROOM_SIDE = 2*WHISPER_SPEAKER_RADIUS;
 	}
+	
+	OCCLUDING_OBJECT_SIZE = occludingSize;
 	WHISPER_UNITS_IN_A_METER = unitsPerMeter;
 	WHISPER_TICS_PER_SECOND = ticksPerSecond;
 }
@@ -177,6 +183,16 @@ void updatePosition(micSpeakerStruct* ms, long int numOfTicks){
 
 int getNumberOfOperations(micSpeakerStruct* ms){
 	double distanceFactor = getMicSpeakerDistanceInMeters(ms)*WHISPER_ALPHA;
+	if(OCCLUDING_OBJECT==1){
+		OccludingPointsStruct* ops = (OccludingPointsStruct*)malloc(sizeof(OccludingPointsStruct));
+		occludingPoints(ms, ops);
+		if(ops->numberOfPoints==2){
+			//TODO: add additional distance
+		} else if (ops->numberOfPoints==1){
+			//Nothing happens because there is occlusion but no additional distance
+		}
+		//Nothing happens because there is no occlusion!
+	}
 	double totalComputations = WHISPER_BETA * pow(distanceFactor,2);
 	
 	//If there is noise, the multiply the amount of computations by a factor.

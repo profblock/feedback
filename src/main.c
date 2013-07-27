@@ -7,7 +7,7 @@ int main()
 {
 
 	//initWhisperRoom(3, 2, 8, 4, 1, 2000000, 800000, 1.2, 100000, 100);
-	initWhisperRoom(3, 2, 8, 4, 1, 2000, 500, .1, 100, 10);
+	initWhisperRoom(3, 2, 8, 4, 1, 250, 2000, 500, .1, 100, 10);
 	int j;
 	micSpeakerStruct* ms;
 	
