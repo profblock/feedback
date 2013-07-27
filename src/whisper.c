@@ -12,6 +12,7 @@ long int getYSpeakerPos(micSpeakerStruct* ms);
 double getMicSpeakerDistanceInMeters(micSpeakerStruct* ms);
 
 
+	
 
 /****** "Public" Methods********/
 
@@ -243,4 +244,98 @@ double getMicSpeakerDistanceInMeters(micSpeakerStruct* ms){
 	return distInMeters;
 }
 
+//Value is returned in the ops datastructure. Must be created beforehand
+void occludingPoints(micSpeakerStruct* ms, OccludingPointsStruct* ops){
+	long int speakerX = getXSpeakerPos(ms);
+	long int speakerY = getYSpeakerPos(ms);
+	long int micX = ms->micXPos;
+	long int micY = ms->micYPos;
+	long int r = OCCLUDING_OBJECT_SIZE;
+	//printf("Speaker: (%ld,%ld), Mic:(%ld, %ld), ",speakerX, speakerY, micX, micY);
+	if(speakerX==micX){
+		//NOTE: I haven't tested this case. But it's simple and shouldn't arrise.  
+		//Special case where on the same X axis
+		printf("SpecialX: UNTESTED!\n");
+		double sqrTerm = pow(r,2) - pow(micX,2);
+		if (sqrTerm<0) {
+			//No Occlusion, nothing to see here.
+			ops->numberOfPoints = 0; 
+			return;
+		} else if (sqrTerm==0){
+			ops->numberOfPoints = 1;
+			ops->x1 = micX;
+			ops->y1 = 0; //Must be on the x-Axis. So It needs to be zero!
+			ops->x2 = micX;
+			ops->y2 = 0;
+			return;
+		} else {
+			ops->numberOfPoints = 2;
+			ops->x1 = (long int)micX;
+			ops->y1 = (long int)sqrt(sqrTerm);
+			ops->x2 = (long int)micX;
+			ops->y2 = (long int)(-sqrt(sqrTerm));
+			return;
+		}			
+	} else if (speakerY==micY){
+		//special case where on same Y axis
+		printf("SpecialY: UNTESTED\n");
+		double sqrTerm = pow(r,2) - pow(micY,2);
+		if (sqrTerm<0) {
+			//No Occlusion, nothing to see here.
+			ops->numberOfPoints = 0; 
+			return;
+		} else if (sqrTerm==0){
+			ops->numberOfPoints = 1;
+			ops->x1 = 0;//Must be on the y-Axis. So It needs to be zero!
+			ops->y1 = micY; 
+			ops->x2 = 0;
+			ops->y2 = micY;
+			return;
+		} else {
+			ops->numberOfPoints = 2;
+			ops->x1 = (long int)sqrt(sqrTerm);
+			ops->y1 = (long int)micY;
+			ops->x2 = (long int)(-sqrt(sqrTerm));
+			ops->y2 = (long int)micY;
+			return;
+		}	
+	} else {
+		double m = ((double)(speakerY-micY))/ (speakerX-micX);
+		double c = micY - m * micX;
+		double alpha = pow(m,2) + 1;
+		double beta = 2*m*c;
+		double gamma = pow(c,2)-pow(r,2);
+		double sqrTerm = pow(beta,2) - 4*alpha*gamma;
+		if (sqrTerm<0){
+			//No Occlusion, nothing to see here.
+			ops->numberOfPoints = 0; 
+			return;
+		} else if (sqrTerm==0){
+			
+			double xTerm = (-beta)/ (2*alpha);
+			double yTerm = m*xTerm +c;
+			ops->numberOfPoints = 1;
+			//For saftey reason, we store the one point in both (x1,y1) and (x2,y2)
+			ops->x1 = (long int)xTerm;
+			ops->y1 = (long int)yTerm;
+			ops->x2 = (long int)xTerm;
+			ops->y2 = (long int)yTerm;
+			ops->numberOfPoints = 1;
+			return;
+
+		} else {
+			double xTerm1 = (-beta+ sqrt(sqrTerm))/ (2*alpha);
+			double yTerm1 = m*xTerm1 +c;
+			double xTerm2 = (-beta- sqrt(sqrTerm))/ (2*alpha);
+			double yTerm2 = m*xTerm2 +c;
+			ops->x1 = (long int)xTerm1;
+			ops->y1 = (long int)yTerm1;
+			ops->x2 = (long int)xTerm2;
+			ops->y2 = (long int)yTerm2;
+			ops->numberOfPoints = 2;
+			return;
+		}
+	
+	}
+}
 
