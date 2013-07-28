@@ -76,6 +76,7 @@ micSpeakerStruct* constructSpeakerMicPairByNumber(int speakerPairNumber){
 	
 	int micNumber = speakerPairNumber/NUMBER_OF_SPEAKERS;
 	int speakerNumber = speakerPairNumber % NUMBER_OF_SPEAKERS;
+	printf("micNumber: %d, SpeakerNumber, %d\n", micNumber,speakerNumber);
 	return constructSpeakerMicPair(speakerNumber,micNumber);
 }
 
@@ -142,8 +143,6 @@ int initSpeakerMicPair(micSpeakerStruct* ms, int speakerNumber, int micNumber){
 	 *printf("The Mic (X,Y) is (%ld, %ld)\n", ms->micXPos, ms->micYPos);
 	 *printf("The distance is %f\n", distance);
 	 */
-	
-	
 	return 0;
 }
 
@@ -182,20 +181,31 @@ void updatePosition(micSpeakerStruct* ms, long int numOfTicks){
 	
 
 int getNumberOfOperations(micSpeakerStruct* ms){
-	double distanceFactor = getMicSpeakerDistanceInMeters(ms)*WHISPER_ALPHA;
+	double distanceFactor = getMicSpeakerDistanceInMeters(ms);
+	//printf("Base Distance :%f, ", distanceFactor);
+	
+	//If there is an occluding object, then we need to add that distance
 	if(OCCLUDING_OBJECT==1){
 		OccludingPointsStruct* ops = (OccludingPointsStruct*)malloc(sizeof(OccludingPointsStruct));
 		occludingPoints(ms, ops);
 		if(ops->numberOfPoints==2){
 			double radians = getThetaBetweenTwoPoints(ops);
-			double additionalDistance = OCCLUDING_OBJECT_SIZE*radians;
+			
+			//The distance around the circle needs to be converted from Units into Meters
+			double additionalDistance = OCCLUDING_OBJECT_SIZE*radians/WHISPER_UNITS_IN_A_METER;
 			distanceFactor+=additionalDistance;
+			
+			//printf("Total Distance :%f, ", distanceFactor);
+			//printf("Additional Distance %f, ", additionalDistance);
 			
 		} else if (ops->numberOfPoints==1){
 			//Nothing happens because there is occlusion but no additional distance
+			//I put this in here incase there is something to be done here in the future
 		}
 		//Nothing happens because there is no occlusion!
 	}
+	
+	distanceFactor*=WHISPER_ALPHA;
 	double totalComputations = WHISPER_BETA * pow(distanceFactor,2);
 	
 	//If there is noise, the multiply the amount of computations by a factor.
@@ -236,6 +246,11 @@ void occludingPoints(micSpeakerStruct* ms, OccludingPointsStruct* ops){
 	long int micX = ms->micXPos;
 	long int micY = ms->micYPos;
 	long int r = OCCLUDING_OBJECT_SIZE;
+	
+	double micSpeakXDiff = micX-speakerX;
+	double micSpeakYDiff = micY-speakerY;
+	double micSpeakerDistance = sqrt(pow(micSpeakXDiff,2) + pow(micSpeakYDiff,2));
+	
 	//printf("Speaker: (%ld,%ld), Mic:(%ld, %ld), ",speakerX, speakerY, micX, micY);
 	if(speakerX==micX){
 		//NOTE: I haven't tested this case. But it's simple and shouldn't arrise.  
@@ -313,12 +328,30 @@ void occludingPoints(micSpeakerStruct* ms, OccludingPointsStruct* ops){
 			double yTerm1 = m*xTerm1 +c;
 			double xTerm2 = (-beta- sqrt(sqrTerm))/ (2*alpha);
 			double yTerm2 = m*xTerm2 +c;
-			ops->x1 = (long int)xTerm1;
-			ops->y1 = (long int)yTerm1;
-			ops->x2 = (long int)xTerm2;
-			ops->y2 = (long int)yTerm2;
-			ops->numberOfPoints = 2;
-			return;
+			
+			//The formula above calculates intersection based on an infinte line
+			//However, we only one a line segment that begins at the microphone 
+			//and ends at the speaker. 
+			//So, we do not including the occlusion if that line segment is longer than
+			//the occluding line segment. 
+			//It is sufficient to check distance to one of the occlusions because
+			//the speaker cannot be inside of the occlusion. 
+			
+			double micTerm1XDiff = micX-xTerm1;
+			double micTerm1YDiff = micY-yTerm1;
+			double micTerm1Distance = sqrt(pow(micTerm1XDiff,2) + pow(micTerm1YDiff,2));
+			if (micSpeakerDistance >micTerm1Distance) {
+				ops->x1 = (long int)xTerm1;
+				ops->y1 = (long int)yTerm1;
+				ops->x2 = (long int)xTerm2;
+				ops->y2 = (long int)yTerm2;
+				ops->numberOfPoints = 2;
+				return;
+			} else {
+				//Intersection on INFINITE LINE but not on this line segment
+				ops->numberOfPoints = 0; 
+				return;
+			}
 		}
 	
 	}
@@ -367,6 +400,7 @@ double getThetaBetweenTwoPoints(OccludingPointsStruct* ops){
 		double sideC = sqrt( pow(ops->x1,2) + pow(ops->y1,2));
 		double term = (pow(sideB,2) + pow(sideC,2) - pow(sideA,2))/(2*sideB*sideC);
 		double angle = acos(term);
+		//printf("Angle %f, ", angle);
 		return angle;
 	} else {
 		return 0;
