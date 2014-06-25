@@ -6,6 +6,15 @@
  * Feedback values given previous inputs
  */
 void printTestString();
-int testNumber(); 
+int testNumber();
+
+typedef struct taskStruct{
+	int jobNumber;
+	double pValue;
+	double iValue;
+	int totalError;
+	int currentError;
+} taskStruct;
+ 
 
 #endif
